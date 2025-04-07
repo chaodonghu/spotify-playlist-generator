@@ -66,28 +66,33 @@ def start_local_server():
 def get_spotify_client() -> spotipy.Spotify:
     # Start local server
     server = start_local_server()
-
+    
     # Create OAuth manager
     auth_manager = SpotifyOAuth(
         client_id=os.getenv("SPOTIFY_CLIENT_ID"),
         client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
         redirect_uri=f"http://localhost:{port}",
         scope="playlist-modify-public playlist-modify-private user-read-private",
-        cache_path=".cache",
+        cache_path=".cache"
     )
-
-    # Get auth URL and open in browser
-    auth_url = auth_manager.get_authorize_url()
-    print(f"Please authorize the application by visiting: {auth_url}")
-    webbrowser.open(auth_url)
-
-    # Wait for the auth code
-    while auth_code is None:
-        time.sleep(1)
-
-    # Get the token
-    token = auth_manager.get_access_token(auth_code)
-
+    
+    # Try to get cached token first
+    token_info = auth_manager.get_cached_token()
+    
+    # If no cached token or token expired, get new token
+    if not token_info or auth_manager.is_token_expired(token_info):
+        # Get auth URL and open in browser
+        auth_url = auth_manager.get_authorize_url()
+        print(f"Please authorize the application by visiting: {auth_url}")
+        webbrowser.open(auth_url)
+        
+        # Wait for the auth code
+        while auth_code is None:
+            time.sleep(1)
+        
+        # Get new token
+        token_info = auth_manager.get_access_token(auth_code, as_dict=False)
+    
     # Create and return the Spotify client
     return spotipy.Spotify(auth_manager=auth_manager)
 
