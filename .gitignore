@@ -1,6 +1,3 @@
-# Environment variables
-.env
-
 # Python
 __pycache__/
 *.py[cod]
@@ -34,5 +31,16 @@ ENV/
 *.swp
 *.swo
 
-# Project specific
-processed_releases.json 
+# Environment variables and secrets
+.env
+.cache
+*.cache
+token.json
+credentials.json
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db 

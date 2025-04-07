@@ -1,5 +1,0 @@
-# Add one artist name per line
-# Example:
-# Taylor Swift
-# Ed Sheeran
-# Drake 
