@@ -1,0 +1,31 @@
+name: Weekly Playlist Generator
+
+on:
+  schedule:
+    # Run every Friday at 12am EST (5:00 UTC)
+    - cron: '0 5 * * 5'
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  generate-playlist:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install spotipy python-dotenv
+        
+    - name: Run playlist generator
+      env:
+        SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+        SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      run: python main.py 

@@ -12,15 +12,19 @@ import webbrowser
 import threading
 import time
 import socket
+import sys
 from config import CONFIG
 
+# Load environment variables
 load_dotenv()
-
 
 # Global variable to store the auth code
 auth_code = None
 port = 8888
 
+def is_running_in_ci():
+    """Check if the script is running in a CI environment"""
+    return os.getenv('CI') == 'true'
 
 def find_available_port(start_port):
     port = start_port
@@ -31,7 +35,6 @@ def find_available_port(start_port):
                 return port
         except OSError:
             port += 1
-
 
 class OAuthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -50,7 +53,6 @@ class OAuthHandler(BaseHTTPRequestHandler):
         # Suppress logging
         return
 
-
 def start_local_server():
     global port
     port = find_available_port(8888)
@@ -61,17 +63,12 @@ def start_local_server():
     server_thread.start()
     return server
 
-
-# ----- SPOTIFY CLIENT -----
 def get_spotify_client() -> spotipy.Spotify:
-    # Start local server
-    server = start_local_server()
-    
-    # Create OAuth manager
+    # Create OAuth manager with cache path
     auth_manager = SpotifyOAuth(
         client_id=os.getenv("SPOTIFY_CLIENT_ID"),
         client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
-        redirect_uri=f"http://localhost:{port}",
+        redirect_uri="http://localhost:8888",
         scope="playlist-modify-public playlist-modify-private user-read-private",
         cache_path=".cache"
     )
@@ -81,6 +78,13 @@ def get_spotify_client() -> spotipy.Spotify:
     
     # If no cached token or token expired, get new token
     if not token_info or auth_manager.is_token_expired(token_info):
+        if is_running_in_ci():
+            print("Error: No valid token found in CI environment. Please run locally first to cache the token.")
+            sys.exit(1)
+            
+        # Start local server
+        server = start_local_server()
+        
         # Get auth URL and open in browser
         auth_url = auth_manager.get_authorize_url()
         print(f"Please authorize the application by visiting: {auth_url}")
@@ -92,10 +96,12 @@ def get_spotify_client() -> spotipy.Spotify:
         
         # Get new token
         token_info = auth_manager.get_access_token(auth_code, as_dict=False)
+        
+        # Save the token info to cache
+        auth_manager.save_token_info(token_info)
     
     # Create and return the Spotify client
     return spotipy.Spotify(auth_manager=auth_manager)
-
 
 # ----- TRACK DISCOVERY MODULE -----
 def get_new_tracks(

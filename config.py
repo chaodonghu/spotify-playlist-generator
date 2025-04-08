@@ -26,6 +26,11 @@ CONFIG = {
         "Daniel Caesar",
         "The Weeknd",
         "Smiley",
+        "Ella Mai",
+        "Fireboy DML",
+        "Chance the Rapper",
+        "Rema",
+        "Koffee",
     ],
     # Make the playlist name dynamic, based on the current date
     "playlist_id": f"New tracks for the week of {datetime.now().strftime('%m/%d/%Y')}",
