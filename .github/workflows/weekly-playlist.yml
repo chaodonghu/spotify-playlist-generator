@@ -26,6 +26,7 @@ jobs:
         
     - name: Run playlist generator
       env:
+        # Spotify API credentials
         SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
         SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
       run: python main.py 
