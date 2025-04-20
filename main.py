@@ -179,7 +179,7 @@ def run_weekly_playlist_update():
     print(f"🔍 Found {len(new_tracks)} new tracks")
 
     add_tracks_to_playlist(sp, CONFIG["playlist_id"], new_tracks)
-
+    print("🎧 Playlist updated successfully")
 
 if __name__ == "__main__":
     run_weekly_playlist_update()
